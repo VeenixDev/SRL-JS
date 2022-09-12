@@ -1,7 +1,13 @@
-let input = `testtesttestTTTTT`
-let code = `"abc" FOR [ REPEAT $3 ("test") ] REPEAT $5 ("T")`;
+let input = `tst12345`
+let code = `!lstart [ "abc" FOR [ REPEAT $3 (FROM ("test") ) ] "numbers" FOR [ REPEAT $5 (!digit) ] ] OR [ LITERAL ("uwu") ] !lend GLOBAL MULTILINE`;
 
 const STRING_LITERAL = "\"";
+
+function printTokens(tokens) {
+	for(let i in tokens) {
+		console.log(`${i} | ${JSON.stringify(tokens[i])}`);
+	}
+}
 
 function check(test, input) {
   let regexp = compileToRegExp(test);
@@ -14,32 +20,68 @@ function tokenize(code) {
   let index = 0;
   let lastToken = "";
 
+  const GLOBAL_VARS = {
+  	digit: "\\d",
+  	nonDigit: "\\D",
+  	whitespace: "\\s",
+  	nonWhitespace: "\\S",
+  	word: "\\w",
+  	nonWord: "\\W",
+  	verticalSpace: "\\v",
+  	escape: "\\",
+  	backspace: "[\\b]",
+  	controlY: "\\cY",
+  	octal: "\\ddd",
+  	hex8: "\\xYY",
+  	hex16: "\\uYYYY",
+  	lstart: "^",
+  	lend: "$"
+  }
   const ESCAPE_SEQUENCES = Object.freeze(["n", "r", "t", "b", "\""]);
-  const EXPRESSIONS = Object.freeze(["FOR", "REPEAT"]);
+  const EXPRESSIONS = Object.freeze(["FOR", "REPEAT", "OR", "LITERAL", "FROM"]);
   const GROUPS = Object.freeze(["[", "]", "(", ")", "<", ">"]);
+  const OPTIONS = Object.freeze(["GLOBAL", "MULTILINE", "INSENSITIVE", "STICKY", "UNICODE", "SINGLELINE", "INDICES"]);
 
-  const pushToken = (token) => {
-    tokens.push(token ? token : {type: "unknown", value: lastToken});
+  const pushToken = (token, forceType) => {
+  	if(!token) return;
+  
+  	if(forceType) {
+  		tokens.push({type: "string", value: token});
+  		lastToken = "";
+  		return;
+  	}
+  
+  	if(EXPRESSIONS.includes(token)) {
+  		tokens.push({type: "expression", value: token});
+  	} else if(GROUPS.includes(token)) {
+  		tokens.push({type: "group", value: token});
+  	} else if(OPTIONS.includes(token)) {
+  		tokens.push({type: "option", value: token});
+  	}else {
+  		if(token.startsWith("$")) {
+  			tokens.push({type: "number", value: token.substring(1)});
+  		} else if(token.startsWith("!")) {
+  			let value = GLOBAL_VARS[token.substring(1)];
+  			console.log("global", value, token.substring(1));
+  			tokens.push({type: "string", value: value});
+  		} else {
+  			tokens.push({type: "unknown", value: token});
+  		}
+  	}
+  	
     lastToken = "";
   }
 
   while(index < code.length) {
     if(code[index] === " ") {
       if(lastToken !== "") {
-        if(EXPRESSIONS.includes(lastToken)) {
-          pushToken({type: "expression" ,value: lastToken});
-        } else if(GROUPS.includes(lastToken)) {
-          pushToken({type: "group" ,value: lastToken});
-        } else {
-          if(lastToken.startsWith("$")) {
-            pushToken({type: "number", value: Number(lastToken.substring(1))});
-          } else {
-            pushToken({type: "unknown" ,value: lastToken});
-          }
-        }
+        pushToken(lastToken);
       }
-    } else if(code[index] === "(" || code[index] === ")") {
-      pushToken({type: "group", value: code[index]});
+    } else if(GROUPS.includes(code[index])) {
+      if(lastToken !== "") {
+      	pushToken(lastToken);
+      }
+      pushToken(code[index]);
     }else if(code[index] === '"') {
       pushToken();
       let stringLiteral = "";
@@ -51,7 +93,7 @@ function tokenize(code) {
             stringLiteral += code[++index];
           }
         } else if(code[index] === "\"") {
-          pushToken({type: "string" ,value: stringLiteral});
+          pushToken(stringLiteral, "string");
           break;
         } else {
           stringLiteral += code[index];
@@ -64,7 +106,7 @@ function tokenize(code) {
   }
 
   if(lastToken != "") {
-    pushToken({type: "end", value: lastToken});
+    pushToken(lastToken);
   }
 
   return tokens.filter((token) => token.value !== "");
@@ -76,7 +118,18 @@ function compileToRegExp(code) {
   let openParentheses = 0;
   let openSquareBracket = 0;
   let openAngleBrackets = 0;
+  let lastTokenLength = 0;
+  let options = [];
 
+  const OPTIONS_MAP = {
+  	GLOBAL: "g",
+  	MULTILINE: "m",
+  	INSENSITIVE: "i",
+  	STICKY: "y",
+  	UNICODE: "u",
+  	SINGLELINE: "s",
+  	INDICES: "d"
+  };
   const escapePattern = (token) => {
     return token.replace(/\(/g, "\\(").replace(/\)/g, "\\)").replace(/"/g, "\\\"");
   }
@@ -90,7 +143,16 @@ function compileToRegExp(code) {
     if(expected.type == token.type && expected.value == token.value) {
       return;
     }
-    throw new Error(`Illegal expression for ${expression} at: ${index} | Expected ${JSON.stringify(expected)} got ${JSON.stringify(token)}`);
+    throw new Error(`Illegal token for ${expression} at: ${index} | Expected ${JSON.stringify(expected)} got ${JSON.stringify(token)}`);
+  }
+  const addOption = (token) => {
+  	for(let option of options) {
+  		if(option.value === token.value) {
+  			throw new Error(`Duplicate option at: ${index} | '${token.value}'`);
+  		}
+  	}
+  	
+  	options.push(token);
   }
   const skipIndex = () => index++;
 
@@ -99,16 +161,12 @@ function compileToRegExp(code) {
   if(split.length <= 0) {
     throw new Error("can't compile empty string")
   }
-
-  console.log(split);
-  while (index < split.length) {
-    let token = split[index];
-    
+  const handleToken = (token) => {    
     if(token === "") {
       index++;
-      continue;
+      return;
     }
-
+	let preLength = regexp.length;
     switch(token.type) {
       case "expression":
         switch(token.value) {
@@ -119,22 +177,48 @@ function compileToRegExp(code) {
             checkToken("FOR", {type: "group", value: "["}, split[++index]);
 
             openSquareBracket++;
-
+			regexp = regexp.substring(0, regexp.length - lastTokenLength);
             regexp += `(?<${name.value}>`;
             break;
           case "REPEAT":
             let amount = split[++index];
+            let repeatsExpression = false;
             checkToken("REPEAT", {type: "group", value: "("}, split[++index]);
             let token = split[++index];
+            console.log("token: ", token);
+            if(token.type === "expression") {
+            	handleToken(token);
+				repeatsExpression = true;
+            } else {
+            	regexp += escapePattern(token.value);
+            }
             checkToken("REPEAT", {type: "group", value: ")"}, split[++index]);
 
-            if(amount.type != "number" || token.type != "string") {
-              throw new Error(`Illegal type for REPEAT at: ${index}`);
+            if(amount.type != "number") {
+              throw new Error(`Illegal type for REPEAT at: ${index} | Expected number or string, got ${JSON.stringify(token)}`);
             }
 
-            console.log(amount, token);
             let isNamed = split[index - 3].type === "group" && split[index - 3].value === ">";
-            regexp += `(${isNamed ? "" : "("}${escapePattern(token.value)}){${amount.value}}${isNamed ? "" : ")"}`;
+            regexp += `{${amount.value}}`;
+            break;
+          case "OR":
+          	regexp += "|";
+          	break;
+          case "LITERAL":
+          	checkToken("LITERAL", {type: "group", value: "("}, split[++index]);
+          	let lit = split[++index];
+          	checkToken("LITERAL", {type: "group", value: ")"}, split[++index]);
+          	
+          	checkType("LITERAL", "string", lit);
+          	
+          	regexp += escapePattern(lit.value);
+          	break;
+          case "FROM":
+            checkToken("FROM", {type: "group", value: "("}, split[++index]);
+            let group = split[++index];
+            checkType("FROM", "string", group);
+            checkToken("FROM", {type: "group", value: ")"}, split[++index]);
+            regexp += `[${group.value}]`;
             break;
           default:
             throw new Error(`Unknown expression at: ${index}: '${JSON.stringify(token)}'`);
@@ -165,29 +249,43 @@ function compileToRegExp(code) {
           case ">":
             regexp += ">";
             openAngleBrackets--;
+            break;
           default:
             throw new Error(`Unknown group type at: ${index} | '${JSON.stringify(token)}'`);
         }
         break;
       case "string":
-        // TODO: Implement string
+      	regexp += escapePattern(split[index].value);
         break;
       case "number":
         // TODO: Implement number
         break;
-        default:
+      case "option":
+      	addOption(split[index]);
+      	break;
+      default:
         throw new Error(`Unknown token type at: ${index} | '${JSON.stringify(token)}'`);
     }
+    lastTokenLength = regexp.length - preLength;
+  }
+  printTokens(split);
+  while (index < split.length) {
+    handleToken(split[index]);
     index++;
   }
 
-  if(!(openAngleBrackets <= 0 || openParentheses <= 0 || openSquareBracket <= 0)) {
-    console.log(openAngleBrackets, openParentheses, openSquareBracket);
+  if(!(openAngleBrackets === 0 && openParentheses === 0 && openSquareBracket === 0)) {
     throw new Error("SRL detected a unterminated bracket!");
   }
-
-  return new RegExp(regexp);
+  let regexpOptions = "";
+  
+  for(let option of options) {
+  	regexpOptions += OPTIONS_MAP[option.value];
+  }
+  
+  return new RegExp(regexp, regexpOptions);
 }
 
-console.log(code, input);
+console.log(code, " | ", input);
 console.log(check(code, input));
+
