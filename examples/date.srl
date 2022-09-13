@@ -5,6 +5,8 @@ An example how a simple date check would be implemented in SRL
 @author Paul Schmeing
 @version 1.0
 ---
+;
+
 "MONTH" FOR [ REPEAT $2 (!digit) ]
 LITERAL ("/")
 "DAY" FOR [ REPEAT $2 (!digit) ]

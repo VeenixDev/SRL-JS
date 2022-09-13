@@ -1,5 +1,5 @@
-let input = `tst12345`
-let code = `!lstart [ "abc" FOR [ REPEAT $3 (FROM ("test") ) ] "numbers" FOR [ REPEAT $5 (!digit) ] ] OR [ LITERAL ("uwu") ] !lend GLOBAL MULTILINE`;
+let input = `tst.12345`
+let code = `!lstart [ "abc" FOR [ REPEAT $3 (FROM ("tes") ) ] "." "numbers" FOR [ REPEAT $5 (!digit) ] ] OR [ LITERAL ("uwu") ] !lend GLOBAL MULTILINE`;
 
 const STRING_LITERAL = "\"";
 
@@ -41,6 +41,8 @@ function tokenize(code) {
   const EXPRESSIONS = Object.freeze(["FOR", "REPEAT", "OR", "LITERAL", "FROM"]);
   const GROUPS = Object.freeze(["[", "]", "(", ")", "<", ">"]);
   const OPTIONS = Object.freeze(["GLOBAL", "MULTILINE", "INSENSITIVE", "STICKY", "UNICODE", "SINGLELINE", "INDICES"]);
+  // TODO: Implement quantifiers
+  const QUANTIFIERS = Object.freeze(["MORE", "LESS", "THAN", "COULD", "HAVE", "MULTIPLE", "EXACT", "GREEDY", "LAZY", "POSSESSIVE"]);
 
   const pushToken = (token, forceType) => {
   	if(!token) return;
@@ -57,7 +59,9 @@ function tokenize(code) {
   		tokens.push({type: "group", value: token});
   	} else if(OPTIONS.includes(token)) {
   		tokens.push({type: "option", value: token});
-  	}else {
+  	} else if(QUANTIFIERS.includes(token)) {
+  		tokens.push({type: "quantifier", value: token});
+  	} else {
   		if(token.startsWith("$")) {
   			tokens.push({type: "number", value: token.substring(1)});
   		} else if(token.startsWith("!")) {
@@ -131,7 +135,7 @@ function compileToRegExp(code) {
   	INDICES: "d"
   };
   const escapePattern = (token) => {
-    return token.replace(/\(/g, "\\(").replace(/\)/g, "\\)").replace(/"/g, "\\\"");
+    return token.replace(/\(/g, "\\(").replace(/\)/g, "\\)").replace(/"/g, "\\\"").replace(/\./g, "\\.");
   }
   const checkType = (expression, expected, token) => {
     if(token.type === expected) {
@@ -182,10 +186,12 @@ function compileToRegExp(code) {
             break;
           case "REPEAT":
             let amount = split[++index];
-            let repeatsExpression = false;
+            
             checkToken("REPEAT", {type: "group", value: "("}, split[++index]);
+            
             let token = split[++index];
-            console.log("token: ", token);
+            let repeatsExpression = false;
+            
             if(token.type === "expression") {
             	handleToken(token);
 				repeatsExpression = true;
@@ -193,6 +199,7 @@ function compileToRegExp(code) {
             	regexp += escapePattern(token.value);
             }
             checkToken("REPEAT", {type: "group", value: ")"}, split[++index]);
+
 
             if(amount.type != "number") {
               throw new Error(`Illegal type for REPEAT at: ${index} | Expected number or string, got ${JSON.stringify(token)}`);
@@ -207,7 +214,7 @@ function compileToRegExp(code) {
           case "LITERAL":
           	checkToken("LITERAL", {type: "group", value: "("}, split[++index]);
           	let lit = split[++index];
-          	checkToken("LITERAL", {type: "group", value: ")"}, split[++index]);
+          	checkToken("LITERAL", {type: "group", value: ")"}, split[index]);
           	
           	checkType("LITERAL", "string", lit);
           	
@@ -218,7 +225,7 @@ function compileToRegExp(code) {
             let group = split[++index];
             checkType("FROM", "string", group);
             checkToken("FROM", {type: "group", value: ")"}, split[++index]);
-            regexp += `[${group.value}]`;
+            regexp += `[${escapePattern(group.value)}]`;
             break;
           default:
             throw new Error(`Unknown expression at: ${index}: '${JSON.stringify(token)}'`);
@@ -254,6 +261,14 @@ function compileToRegExp(code) {
             throw new Error(`Unknown group type at: ${index} | '${JSON.stringify(token)}'`);
         }
         break;
+      case "quantifier":
+      	// Object.freeze(["MORE", "LESS", "THAN", "COULD", "HAVE", "MULTIPLE", "EXACT", "GREEDY", "LAZY", "POSSESSIVE"]);
+      	switch (token.value) {
+      		case "MORE":
+      			checkToken("MORE", {type: "quantifier", value: "THAN"});
+      			
+      	}
+      	break;
       case "string":
       	regexp += escapePattern(split[index].value);
         break;
