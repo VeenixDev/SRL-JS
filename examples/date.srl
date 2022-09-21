@@ -5,11 +5,9 @@ An example how a simple date check would be implemented in SRL
 @author Paul Schmeing
 @version 1.0
 ---
-;
-
-"MONTH" FOR [ REPEAT $2 (!digit) ]
+NAME "MONTH" FOR [ LITERAL (!digit) EXACT $2 ]
 LITERAL ("/")
-"DAY" FOR [ REPEAT $2 (!digit) ]
+NAME "DAY" FOR [ LITERAL (!digit) EXACT $2 ]
 LITERAL ("/")
-"YEAR" FOR [ REPEAT $4 (!digit) ]
+NAME "YEAR" FOR [ LITERAL (!digit) EXACT $4 ]
 

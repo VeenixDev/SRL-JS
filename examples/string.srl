@@ -1,0 +1,14 @@
+STRING()
+
+Checks if a text is a string marked by two qutation marks, one at the start and one at the end.
+The String will accept escaped qutation marks by adding a backslash before.
+
+@author Paul Schmeing
+@version 1.0
+---
+START INPUT
+LITERAL ("\"")
+[
+    [ LITERAL ("\\\"") ]
+    OR ANY
+] LAZY
