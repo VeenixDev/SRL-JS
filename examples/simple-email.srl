@@ -5,17 +5,18 @@ An example how you could implement an simple email check.
 @author Paul Schmeing
 @version 1.0
 ---
-; "localpart" FOR [ FROM ("A-Za-z0-9._%+-") MORE THAN 0 ] "@" "domain" FOR [ FROM ("A-Za-z0-9._%+-") MORE THAN 0 ] "." "tld" FOR [ FROM ("A-Z") BETWEEN 2 AND 4 ]
+DEFINE "localpart" FOR [
+	FROM (!letter !number "._%+-") MANY1
+]
+DEFINE "domain" FOR [
+	FROM (!letter !number "._%+-") MANY1
+]
+DEFINE "tld" FOR [
+	FROM (!letter) BETWEEN($2, $4)
+]
 
-
-"localpart" FOR [
-	FROM ("A-Za-z0-9._%+-") MORE THAN 0
-]
-LITERAL "@"
-"domain" FOR [
-	FROM ("A-Za-z0-9._%+-") MORE THAN 0
-]
-LITERAL "."
-"tld" FOR [
-	FROM ("A-Z") BETWEEN 2 AND 4
-]
+SUBRUTINE ("localpart")
+LITERAL ("@")
+SUBRUTINE ("domain")
+LITERAL (".")
+SUBRUTINE ("tld")
