@@ -15,8 +15,8 @@ DEFINE "tld" FOR [
 	FROM (!letter) BETWEEN($2, $4)
 ]
 
-SUBRUTINE ("localpart")
+SUBROUTINE ("localpart")
 LITERAL ("@")
-SUBRUTINE ("domain")
+SUBROUTINE ("domain")
 LITERAL (".")
-SUBRUTINE ("tld")
+SUBROUTINE ("tld")
