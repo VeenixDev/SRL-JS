@@ -77,16 +77,16 @@ Anchors allows you to jump to certain points.
 Groups are much like normal groups in regex and can be used as such.  
 There are some different ways how we can use groups.
 
-| Name                | Usage                     | RegExp    | Description                      |
-| ------------------- | ------------------------- | --------- | -------------------------------- |
-| Capture enclosed    | [...]                     | (...)     | Capture everything enclosed      |
-| Atomic capture      | ATMOIC [...]              | (?>...)   | Atmoic group (non-capturing)     |
-| Named group         | NAME "Foo" FOR [...]      | (?\<Foo>) | Named capturing group            |
-| Define group        | DEFINE "Foo" FOR [...]    | (?P>Foo)  | Defines a group for later use \* |
-| Positive lookahead  | POSITIVE LOOKAHEAD [...]  | (?=...)   | Positive lookahead               |
-| Negative lookahead  | NEGATIVE LOOKAHEAD [...]  | (?!...)   | Negative lookahead               |
-| Positive lookbehind | POSITIVE LOOKBEHIND [...] | (?<=...)  | Positive lookbehind              |
-| Negative lookbehind | NEGATIVE LOOKBEHIND [...] | (?<!...)  | Negative lookbehind              |
+| Name                | Usage                     | RegExp    | Description                   |
+| ------------------- | ------------------------- | --------- | ----------------------------- |
+| Capture enclosed    | [...]                     | (...)     | Capture everything enclosed   |
+| Atomic capture      | ATMOIC [...]              | (?>...)   | Atmoic group (non-capturing)  |
+| Named group         | NAME "Foo" FOR [...]      | (?\<Foo>) | Named capturing group         |
+| Define group \*     | DEFINE "Foo" FOR [...]    | (?P>Foo)  | Defines a group for later use |
+| Positive lookahead  | POSITIVE LOOKAHEAD [...]  | (?=...)   | Positive lookahead            |
+| Negative lookahead  | NEGATIVE LOOKAHEAD [...]  | (?!...)   | Negative lookahead            |
+| Positive lookbehind | POSITIVE LOOKBEHIND [...] | (?<=...)  | Positive lookbehind           |
+| Negative lookbehind | NEGATIVE LOOKBEHIND [...] | (?<!...)  | Negative lookbehind           |
 
 \* Is not supported by the Emacs RegExp Engine, but its implemented via SRL
 
@@ -94,30 +94,35 @@ There are some different ways how we can use groups.
 
 Quantifiers are used to define how often the last element should be repeated.
 
-| Name          | Usage                         | RegExp | Description           |
-| ------------- | ----------------------------- | ------ | --------------------- |
-| Optional      | LITERAL ("a") OPTIONAL        | a?     | 0 or 1 of a           |
-| Zero or More* | LITERAL ("a") MANY            | a*     | 0 or more of a        |
-| One or More   | LITERAL ("a") MANY1           | a+     | 1 or more of a        |
-| Exact         | LITERAL ("a") EXACT ($3)      | a{3}   | Exactly 3 of a        |
-| More than     | LITERAL ("a") MORE ($3)       | a{3,}  | 3 or more of a        |
-| Between       | LITERAL ("a") BETWEEN ($3 $6) | a{3,6} | Between 3 and 6 of a  |
-| Greedy**      | LITERAL ("a") GREEDY          | a*     | Greedy quantifier     |
-| Lazy          | LITERAL ("a") LAZY            | a*?    | Lazy quantifier       |
-| Possessive    | LITERAL ("a") POSSESSIVE      | a*+    | Possessive quantifier |
+| Name             | Usage                         | RegExp | Description           |
+| ---------------- | ----------------------------- | ------ | --------------------- |
+| Optional         | LITERAL ("a") OPTIONAL        | a?     | 0 or 1 of a           |
+| Zero or More*    | LITERAL ("a") MANY            | a*     | 0 or more of a        |
+| One or More      | LITERAL ("a") MANY1           | a+     | 1 or more of a        |
+| Exact            | LITERAL ("a") EXACT ($3)      | a{3}   | Exactly 3 of a        |
+| More than        | LITERAL ("a") MORE ($3)       | a{3,}  | 3 or more of a        |
+| Less than \*\*\* | LITERAL ("a") LESS ($3)       | a{0,3} | 3 or less of a        |
+| Between          | LITERAL ("a") BETWEEN ($3 $6) | a{3,6} | Between 3 and 6 of a  |
+| Greedy**         | LITERAL ("a") GREEDY          | a*     | Greedy quantifier     |
+| Lazy             | LITERAL ("a") LAZY            | a*?    | Lazy quantifier       |
+| Possessive       | LITERAL ("a") POSSESSIVE      | a*+    | Possessive quantifier |
 
 \* Is replaceable with GREEDY  
-\*\* Is replaceable with MANY
+\*\* Is replaceable with MANY  
+\*\*\* Is not supported by the Emacs RegExp Engine, but its implemented via SRL
 
 ## Instructions
 
 Instructions are used to define your patterns.
 
-| Name    | Usage          | RegExp | Description          |
-| ------- | -------------- | ------ | -------------------- |
-| From    | FROM ("123")   | [123]  | Single char of       |
-| Except  | EXCEPT ("123") | [^123] | Any other char than  |
-| Literal | LITERAL ("a")  | a      | Whole string matches |
+| Name          | Usage              | RegExp    | Description                |
+| ------------- | ------------------ | --------- | -------------------------- |
+| From          | FROM ("123")       | [123]     | Single char of             |
+| Except        | EXCEPT ("123")     | [^123]    | Any other char than        |
+| Literal       | LITERAL ("a")      | a         | Whole string matches       |
+| Subroutine \* | SUBROUTINE("test") | (?P>test) | Matches a predefined group |
+
+\* Custom implementation, this feature is not a part of the default regex engine for ecmascript
 
 ## Flags
 
@@ -128,12 +133,8 @@ Flags are used to set the modes in the RegExp parser
 | Global           | GLOBAL           | Does not stop after first match                                   |
 | Multiline        | MULTILINE        | ^ and $ match the start and end of the line                       |
 | Case insensitive | CASE INSENSITIVE | Matches capital letters and non-captial letters as the same       |
-| Verbose\*        | VERBOSE          | Ignores whitespaces                                               |
 | Single line      | SINGLE LINE      | Reads whole input as one line                                     |
 | Unicode          | UNICODE          | Strings will be treated as UTF-16                                 |
-| Extra            | EXTRA            | Invalid meta sequences will fail the match                        |
-| Ungreedy         | UNGREEDY         | Makes quantifiers ungreedy                                        |
-| Anchor           | ANCHOR           | Forces pattern to anchor at start of the search or the last match |
-| Duplicate group  | DUPLICATE GROUP  | Allows multiple groups with the same name                         |
+| STICKY           | STICKY           | Forces pattern to anchor at start of the search or the last match |
 
 \* Also called "Ignore Whitespace"
