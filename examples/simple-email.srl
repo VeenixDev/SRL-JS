@@ -5,14 +5,16 @@ An example how you could implement an simple email check.
 @author Paul Schmeing
 @version 1.0
 ---
+DEFINE "part" FOR [ FROM (!digit !word "._%+-") ]
+
 DEFINE "localpart" FOR [
-	FROM (!letter !number "._%+-") MANY1
+  SUBROUTINE ("part") MANY1
 ]
 DEFINE "domain" FOR [
-	FROM (!letter !number "._%+-") MANY1
+  SUBROUTINE ("part") MANY1
 ]
 DEFINE "tld" FOR [
-	FROM (!letter) BETWEEN($2, $4)
+  FROM (!word) BETWEEN ($2 $4)
 ]
 
 SUBROUTINE ("localpart")

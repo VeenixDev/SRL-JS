@@ -12,3 +12,5 @@ LITERAL ("\"")
     [ LITERAL ("\\\"") ]
     OR ANY
 ] LAZY
+LITERAL ("\"")
+END INPUT
