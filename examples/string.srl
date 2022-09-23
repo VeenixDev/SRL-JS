@@ -10,7 +10,7 @@ START INPUT
 LITERAL ("\"")
 [
     [ LITERAL ("\\\"") ]
-    OR ANY
+    OR LITERAL (!any)
 ] LAZY
 LITERAL ("\"")
 END INPUT

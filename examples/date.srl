@@ -10,4 +10,3 @@ LITERAL ("/")
 NAME "DAY" FOR [ LITERAL (!digit) EXACT ($2) ]
 LITERAL ("/")
 NAME "YEAR" FOR [ LITERAL (!digit) EXACT ($4) ]
-
