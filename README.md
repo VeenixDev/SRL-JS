@@ -115,12 +115,13 @@ Quantifiers are used to define how often the last element should be repeated.
 
 Instructions are used to define your patterns.
 
-| Name          | Usage              | RegExp    | Description                |
-| ------------- | ------------------ | --------- | -------------------------- |
-| From          | FROM ("123")       | [123]     | Single char of             |
-| Except        | EXCEPT ("123")     | [^123]    | Any other char than        |
-| Literal       | LITERAL ("a")      | a         | Whole string matches       |
-| Subroutine \* | SUBROUTINE("test") | (?P>test) | Matches a predefined group |
+| Name          | Usage                          | RegExp    | Description                |
+| ------------- | ------------------------------ | --------- | -------------------------- |
+| From          | FROM ("123")                   | [123]     | Single char of             |
+| Except        | EXCEPT ("123")                 | [^123]    | Any other char than        |
+| Literal       | LITERAL ("a")                  | a         | Whole string matches       |
+| Or            | LITERAL ("a") OR LTIERAL ("b") | a|b       | a or b                     |
+| Subroutine \* | SUBROUTINE("test")             | (?P>test) | Matches a predefined group |
 
 \* Custom implementation, this feature is not a part of the default regex engine for ecmascript
 
