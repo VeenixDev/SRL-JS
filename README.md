@@ -120,7 +120,7 @@ Instructions are used to define your patterns.
 | From          | FROM ("123")                   | [123]     | Single char of             |
 | Except        | EXCEPT ("123")                 | [^123]    | Any other char than        |
 | Literal       | LITERAL ("a")                  | a         | Whole string matches       |
-| Or            | LITERAL ("a") OR LTIERAL ("b") | a|b       | a or b                     |
+| Or            | LITERAL ("a") OR LTIERAL ("b") | a\|b       | a or b                     |
 | Subroutine \* | SUBROUTINE("test")             | (?P>test) | Matches a predefined group |
 
 \* Custom implementation, this feature is not a part of the default regex engine for ecmascript
