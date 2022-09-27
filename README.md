@@ -82,7 +82,7 @@ There are some different ways how we can use groups.
 | Capture enclosed    | [...]                     | (...)     | Capture everything enclosed   |
 | Atomic capture      | ATMOIC [...]              | (?>...)   | Atmoic group (non-capturing)  |
 | Named group         | NAME "Foo" FOR [...]      | (?\<Foo>) | Named capturing group         |
-| Define group \*     | DEFINE "Foo" FOR [...]    | (?P>Foo)  | Defines a group for later use |
+| Define group \*     | DEFINE "Foo" FOR [...]    |           | Defines a group for later use |
 | Positive lookahead  | POSITIVE LOOKAHEAD [...]  | (?=...)   | Positive lookahead            |
 | Negative lookahead  | NEGATIVE LOOKAHEAD [...]  | (?!...)   | Negative lookahead            |
 | Positive lookbehind | POSITIVE LOOKBEHIND [...] | (?<=...)  | Positive lookbehind           |
@@ -120,8 +120,8 @@ Instructions are used to define your patterns.
 | From          | FROM ("123")                   | [123]     | Single char of             |
 | Except        | EXCEPT ("123")                 | [^123]    | Any other char than        |
 | Literal       | LITERAL ("a")                  | a         | Whole string matches       |
-| Or            | LITERAL ("a") OR LTIERAL ("b") | a\|b       | a or b                     |
-| Subroutine \* | SUBROUTINE("test")             | (?P>test) | Matches a predefined group |
+| Or            | LITERAL ("a") OR LTIERAL ("b") | a\|b      | a or b                     |
+| Subroutine \* | SUBROUTINE("test")             |           | Matches a predefined group |
 
 \* Custom implementation, this feature is not a part of the default regex engine for ecmascript
 
