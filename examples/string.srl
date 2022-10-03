@@ -1,4 +1,4 @@
-STRING()
+STRING
 
 Checks if a text is a string marked by two qutation marks, one at the start and one at the end.
 The String will accept escaped qutation marks by adding a backslash before.

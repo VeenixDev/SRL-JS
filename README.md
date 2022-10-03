@@ -77,16 +77,17 @@ Anchors allows you to jump to certain points.
 Groups are much like normal groups in regex and can be used as such.  
 There are some different ways how we can use groups.
 
-| Name                | Usage                     | RegExp    | Description                   |
-| ------------------- | ------------------------- | --------- | ----------------------------- |
-| Capture enclosed    | [...]                     | (...)     | Capture everything enclosed   |
-| Atomic capture      | ATMOIC [...]              | (?>...)   | Atmoic group (non-capturing)  |
-| Named group         | NAME "Foo" FOR [...]      | (?\<Foo>) | Named capturing group         |
-| Define group \*     | DEFINE "Foo" FOR [...]    |           | Defines a group for later use |
-| Positive lookahead  | POSITIVE LOOKAHEAD [...]  | (?=...)   | Positive lookahead            |
-| Negative lookahead  | NEGATIVE LOOKAHEAD [...]  | (?!...)   | Negative lookahead            |
-| Positive lookbehind | POSITIVE LOOKBEHIND [...] | (?<=...)  | Positive lookbehind           |
-| Negative lookbehind | NEGATIVE LOOKBEHIND [...] | (?<!...)  | Negative lookbehind           |
+| Name                | Usage                                                                   | RegExp                      | Description                                   |
+| ------------------- | ----------------------------------------------------------------------- | --------------------------- | --------------------------------------------- |
+| Capture enclosed    | [...]                                                                   | (...)                       | Capture everything enclosed                   |
+| Atomic capture      | ATMOIC [...]                                                            | (?>...)                     | Atmoic group (non-capturing)                  |
+| Named group         | NAME "Foo" FOR [...]                                                    | (?\<Foo>)                   | Named capturing group                         |
+| Define group \*     | DEFINE "Foo" FOR [...]                                                  |                             | Defines a group for later use                 |
+| Positive lookahead  | POSITIVE LOOKAHEAD [...]                                                | (?=...)                     | Positive lookahead                            |
+| Negative lookahead  | NEGATIVE LOOKAHEAD [...]                                                | (?!...)                     | Negative lookahead                            |
+| Positive lookbehind | POSITIVE LOOKBEHIND [...]                                               | (?<=...)                    | Positive lookbehind                           |
+| Negative lookbehind | NEGATIVE LOOKBEHIND [...]                                               | (?<!...)                    | Negative lookbehind                           |
+| If branching        | IF ([LITERAL ("foo")]) THEN [LITERAL ("Bar")] ELSE [LITERAL ("barFoo")] | (((?=foo)fooBar)\|(barFoo)) | Allows to go through different regex branches |
 
 \* Is not supported by the Emacs RegExp Engine, but its implemented via SRL
 
@@ -115,13 +116,13 @@ Quantifiers are used to define how often the last element should be repeated.
 
 Instructions are used to define your patterns.
 
-| Name          | Usage                          | RegExp    | Description                |
-| ------------- | ------------------------------ | --------- | -------------------------- |
-| From          | FROM ("123")                   | [123]     | Single char of             |
-| Except        | EXCEPT ("123")                 | [^123]    | Any other char than        |
-| Literal       | LITERAL ("a")                  | a         | Whole string matches       |
-| Or            | LITERAL ("a") OR LTIERAL ("b") | a\|b      | a or b                     |
-| Subroutine \* | SUBROUTINE("test")             |           | Matches a predefined group |
+| Name          | Usage                          | RegExp | Description                |
+| ------------- | ------------------------------ | ------ | -------------------------- |
+| From          | FROM ("123")                   | [123]  | Single char of             |
+| Except        | EXCEPT ("123")                 | [^123] | Any other char than        |
+| Literal       | LITERAL ("a")                  | a      | Whole string matches       |
+| Or            | LITERAL ("a") OR LTIERAL ("b") | a\|b   | a or b                     |
+| Subroutine \* | SUBROUTINE("test")             |        | Matches a predefined group |
 
 \* Custom implementation, this feature is not a part of the default regex engine for ecmascript
 
